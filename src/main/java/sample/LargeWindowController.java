@@ -8,12 +8,16 @@ import java.util.Map;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.control.Toggle;
@@ -41,6 +45,8 @@ public class LargeWindowController  {
     @FXML
     private FlowPane imagesFlowPane;
     @FXML
+    private ScrollPane scrollPane;
+    @FXML
     private TitledPane SelectedPicturesPane;
     @FXML
     private HBox SelectedPicturesHbox;
@@ -66,7 +72,17 @@ public class LargeWindowController  {
      }
 
     @FXML
-    private void handlepicturesButtonAction(ActionEvent event) throws IOException {
+    private void handleResizeButtonAction(ActionEvent event) throws IOException {
+        if(SelectedPicturesHbox.getChildren().size()==selectedImage.size())
+        JavaImageResizer.resizeUsingJavaAlgo(selectedImage,choosedResolution.width,choosedResolution.height);
+        else{
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("This is an example of JavaFX 8 Dialogs... ");
+            alert.setHeaderText("Information Alert");
+            alert.setContentText("ezrer");
+            alert.show();
+
+        }
 
         }
 
@@ -85,7 +101,7 @@ public class LargeWindowController  {
                 googleSearchQuery=queryTextField.getText();
             }
         });
-
+        fillRadioButton();
         loadSearchResults(pictures);
 
     }
@@ -100,14 +116,15 @@ public class LargeWindowController  {
             thumbnail.setOnMouseClicked(new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent t) {
-                    selectedImage.add(thumbnail.getOriginalImageLink());
                     if(SelectedPicturesHbox.getChildren().contains(thumbnail)){
                         SelectedPicturesHbox.getChildren().remove(thumbnail);
+                        selectedImage.remove(thumbnail.getOriginalImageLink());
                         imagesFlowPane.getChildren().add(thumbnail);
                         if(!selectedPicturesNumber.getText().equals("0"))
                         selectedPicturesNumber.setText(String.valueOf(Integer.valueOf(selectedPicturesNumber.getText())-1));
                     }
                     else{
+                        selectedImage.add(thumbnail.getOriginalImageLink());
                         SelectedPicturesHbox.getChildren().add(thumbnail);
                         selectedPicturesNumber.setText(String.valueOf(1+Integer.valueOf(selectedPicturesNumber.getText())));
                     }

@@ -8,7 +8,7 @@ public enum Resolution {
     public int height;
     public int width;
 
-    Resolution(int height, int width) {
+    Resolution( int width,int height) {
         this.height = height;
         this.width = width;
     }
