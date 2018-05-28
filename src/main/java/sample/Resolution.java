@@ -5,12 +5,15 @@ public enum Resolution {
     SCREENSHOT(1280,720),
     FEATURED(1024,500);
 
-    public int height;
-    public int width;
 
-    Resolution( int width,int height) {
+    private int height;
+    private int width;
+
+
+    Resolution(int width, int height) {
         this.height = height;
         this.width = width;
+
     }
 
     public int getHeight() {

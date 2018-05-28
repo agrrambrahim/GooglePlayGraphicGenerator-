@@ -1,32 +1,29 @@
 package sample;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TitledPane;
-import javafx.scene.control.Toggle;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
 
 /**
  * Created by bagrram on 23/05/2018.
@@ -73,23 +70,66 @@ public class LargeWindowController  {
 
     @FXML
     private void handleResizeButtonAction(ActionEvent event) throws IOException {
-        if(SelectedPicturesHbox.getChildren().size()==selectedImage.size())
-        JavaImageResizer.resizeUsingJavaAlgo(selectedImage,choosedResolution.width,choosedResolution.height);
-        else{
+
+        if(isResolutionSelected())
+        if(SelectedPicturesHbox.getChildren().size()==selectedImage.size()){
+            DirectoryChooser fileChooser = new DirectoryChooser();
+            fileChooser.setTitle("Open Resource File");
+            Stage mainWindow = (Stage)  ((Node)event.getSource()).getScene().getWindow();
+            File file = fileChooser.showDialog(mainWindow);
+            int isDoneWithSuccess = new JavaImageResizer().resizeUsingJavaAlgo(file,selectedImage,choosedResolution.getWidth(),choosedResolution.getHeight());
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("This is an example of JavaFX 8 Dialogs... ");
-            alert.setHeaderText("Information Alert");
-            alert.setContentText("ezrer");
+            alert.setTitle("Result");
+                alert.setHeaderText("Resizing is done successfully");
+                alert.setContentText("number of unresized pictures : "+isDoneWithSuccess);
+
+
+            //else{
+              //  alert.setAlertType(Alert.AlertType.ERROR);
+                //alert.setHeaderText("an Error was faced during Resizing");
+            //}
+            alert.getButtonTypes().remove(ButtonType.OK);
+            alert.getButtonTypes().add(ButtonType.NEXT);
+            alert.getButtonTypes().add(ButtonType.FINISH);
+            centerStage((Stage)alert.getDialogPane().getScene().getWindow(),100,100);
+            Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() == ButtonType.FINISH){
+                Platform.exit();
+            } else {
+
+            }
+
+
+
+        }
+
+        else{
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("EROOR");
+            alert.setHeaderText("is number of Selected images is greater than the original links filled");
+            centerStage((Stage)alert.getDialogPane().getScene().getWindow(),100,100);
             alert.show();
 
         }
 
         }
 
-    public void initData(Map<String, String> pictures, String query, final int nextQueryShouldStartFrom) throws IOException {
+    private boolean isResolutionSelected() {
+        if(radio1024.isSelected()==false && radio1280.isSelected()==false){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error ");
+            alert.setHeaderText("You didn't choose the resolution");
+            centerStage((Stage)alert.getDialogPane().getScene().getWindow(),100,100);
+            alert.show();
+            return false;
+        }
+        else return true;
+    }
+
+    public void initData(Map<String, String> pictures, String query, final int nextQueryShouldStart) throws IOException {
         this.googleSearchQuery=query;
-        this.nextQueryShouldStartFrom=nextQueryShouldStartFrom;
-        maxResultsTextField.setText(String.valueOf(nextQueryShouldStartFrom));
+        this.nextQueryShouldStartFrom=nextQueryShouldStart;
+        maxResultsTextField.setText(String.valueOf(nextQueryShouldStart));
         queryTextField.setText(query);
         maxResultsTextField.setOnInputMethodTextChanged(new EventHandler<InputMethodEvent>() {
             public void handle(InputMethodEvent event) {
@@ -103,7 +143,12 @@ public class LargeWindowController  {
         });
         fillRadioButton();
         loadSearchResults(pictures);
-
+        queryTextField.setOnInputMethodTextChanged(new EventHandler<InputMethodEvent>() {
+            @Override
+            public void handle(InputMethodEvent event) {
+                nextQueryShouldStartFrom=0;
+            }
+        });
     }
 
     private void loadSearchResults(Map<String, String> pictures) {
@@ -142,7 +187,6 @@ public class LargeWindowController  {
         radio1280.setToggleGroup(group);
         radio1024.setUserData(Resolution.FEATURED);
         radio1280.setUserData(Resolution.SCREENSHOT);
-
         group.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
             public void changed(ObservableValue<? extends Toggle> ov,
                                 Toggle old_toggle, Toggle new_toggle) {
@@ -152,5 +196,10 @@ public class LargeWindowController  {
             }
         });
 
+    }
+    public static void centerStage(Stage stage, double width, double height) {
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+        stage.setX((screenBounds.getWidth() - width) / 2);
+        stage.setY((screenBounds.getHeight() - height) / 2);
     }
 }
